@@ -6,6 +6,8 @@ This repository provides an API to postal codes. It depends on [represent-bounda
 
 The [represent-canada](http://github.com/opennorth/represent-canada) repository provides a full sample app.
 
+API documentation is available at [represent.opennorth.ca/api/](http://represent.opennorth.ca/api/#postcode).
+
 ## Adding data
 
 Basic centroid information on postal codes comes courtesy of [geocoder.ca](http://geocoder.ca/?freedata=1). Load it with:
