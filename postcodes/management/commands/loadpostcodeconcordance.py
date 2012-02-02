@@ -5,6 +5,7 @@ import sys
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ If no filename is provided, reads from STDIN."""
             help="Which Boundary field the second column of the CSV file corresponds to. Either 'external_id' or 'slug'. Default is external_id."),
     )
 
+    @transaction.commit_on_success
     def handle(self, *args, **options):
         from postcodes.models import Postcode, PostcodeConcordance
         from boundaries.models import Boundary, BoundarySet
@@ -63,9 +65,14 @@ If no filename is provided, reads from STDIN."""
                 print "Cannot find boundary for %s" % searchterm
                 continue
 
+            boundary_name = u"%s/%s" % (bset.slug, boundary.slug)
+            if PostcodeConcordance.objects.filter(code=pc, boundary=boundary_name).exists():
+                print "Concordance already exists for %s -> %s" % (code, boundary_name)
+                continue
+                
             PostcodeConcordance.objects.create(
                 code=pc,
-                boundary=u"%s/%s" % (bset.slug, boundary.slug),
+                boundary=boundary_name,
                 source=source
             )
 
