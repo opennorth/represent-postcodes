@@ -44,7 +44,6 @@ If no filename is provided, reads from STDIN."""
         boundaries = Boundary.objects.filter(set=bset)
 
         boundaries_seen = dict()
-        PostcodeConcordance.objects.filter(source=source).delete()
 
         for (code, searchterm) in csv.reader(f):
             try:
