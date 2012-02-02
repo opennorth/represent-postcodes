@@ -13,7 +13,7 @@ class Command(BaseCommand):
     to boundaries. Arguments:
 
 boundary-set-slug: the slug of the BoundarySet the concordance is for
-source: <= 20 characters describing where this concordance is from
+source: <= 30 characters describing where this concordance is from
 filename: a two-column CSV file, where column 1 is the postcode and
     column 2 is a reference to the boundary (see the --searchfield option)
 
