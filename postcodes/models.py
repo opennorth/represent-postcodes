@@ -59,7 +59,7 @@ class PostcodeConcordance(models.Model):
 
     code = models.ForeignKey(Postcode)
     boundary = models.TextField()
-    source = models.CharField(max_length=20,
+    source = models.CharField(max_length=30,
         help_text="An internal-use string referring to the source of this data.")
 
     class Meta:
