@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from representatives.utils import slugify
+from django.template.defaultfilters import slugify
 
 logger = logging.getLogger(__name__)
 
