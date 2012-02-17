@@ -7,6 +7,8 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from representatives.utils import slugify
+
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
@@ -23,7 +25,7 @@ If no filename is provided, reads from STDIN."""
 
     option_list = BaseCommand.option_list + (
         make_option('--searchfield', action='store', dest='search-field', default='external_id',
-            help="Which Boundary field the second column of the CSV file corresponds to. Either 'external_id' or 'slug'. Default is external_id."),
+            help="Which Boundary field the second column of the CSV file corresponds to. Either 'external_id', 'name' or 'slug'. Default is external_id."),
     )
 
     @transaction.commit_on_success
@@ -57,9 +59,13 @@ If no filename is provided, reads from STDIN."""
             try:
                 boundary = boundaries_seen.get(searchterm)
                 if not boundary:
-                    boundary = boundaries.get(**{
-                        options['search-field']: searchterm
-                    })
+                    if options['search-field'] == 'name':
+                        slug = slugify(searchterm)
+                        boundary = boundaries.get(slug=slug)
+                    else:
+                        boundary = boundaries.get(**{
+                            options['search-field']: searchterm
+                        })
                     boundaries_seen[searchterm] = boundary
             except Boundary.DoesNotExist:
                 print "Cannot find boundary for %s" % searchterm
@@ -75,7 +81,3 @@ If no filename is provided, reads from STDIN."""
                 boundary=boundary_name,
                 source=source
             )
-
-
-
-
