@@ -22,7 +22,7 @@ class Postcode(models.Model):
     def save(self, *args, **kwargs):
         self.clean_fields()
         if not self.province:
-            if self.code[0] == 'X'
+            if self.code[0] == 'X':
                 self.province = {
                     'X0A': 'NU',
                     'X0B': 'NU',
