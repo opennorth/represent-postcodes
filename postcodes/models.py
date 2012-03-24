@@ -1,6 +1,7 @@
 import re
 
 from django.contrib.gis.db import models
+from django.core import urlresolvers
 from django.core.validators import RegexValidator
 
 from boundaries.models import Boundary
@@ -60,7 +61,24 @@ class Postcode(models.Model):
         r = {
             'code': self.code,
             'city': self.city,
-            'province': self.province
+            'province': self.province,
+            'related': {
+                'boundaries_url': urlresolvers.reverse('postcode_boundaries', kwargs={'code': self.code}),
+                'representatives_url': urlresolvers.reverse('postcode_representatives', kwargs={'code': self.code})
+            }
+        }
+        if self.centroid:
+            r['centroid'] = {
+               'type': 'Point',
+               'coordinates': [self.centroid.x, self.centroid.y]
+            }
+        r.update(self.get_boundaries()) # for now
+        return r
+
+    def get_boundaries(self):
+        r = {
+            'boundaries_concordance': [],
+            'boundaries_centroid': []
         }
         concordances = PostcodeConcordance.objects.filter(code=self.code).values_list('boundary', flat=True)
         concordance_sets = set()
@@ -73,17 +91,12 @@ class Postcode(models.Model):
                 concordance_sets.add(b['boundary_set_name'])
             r['boundaries_concordance'] = boundaries
         if self.centroid:
-            r['centroid'] = {
-               'type': 'Point',
-               'coordinates': [self.centroid.x, self.centroid.y]
-            }
             boundaries = Boundary.objects.filter(shape__contains=self.centroid)
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             r['boundaries_centroid'] = filter(
                 lambda b: b['boundary_set_name'] not in concordance_sets,
                 Boundary.get_dicts(boundaries)
             )
-
         return r
 
 class PostcodeConcordance(models.Model):
