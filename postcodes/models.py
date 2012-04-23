@@ -5,6 +5,13 @@ from django.core import urlresolvers
 from django.core.validators import RegexValidator
 
 from boundaries.models import Boundary
+try:
+    from representatives.models import Representative
+    from representatives.utils import boundary_url_to_name
+    USE_REPRESENTATIVES = True
+except ImportError:
+    Representative = None
+    USE_REPRESENTATIVES = False
 
 r_postalcode = re.compile(r'^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]\d[ABCEGHJKLMNPRSTVWXYZ]\d$')
 
@@ -62,17 +69,18 @@ class Postcode(models.Model):
             'code': self.code,
             'city': self.city,
             'province': self.province,
-            'related': {
-                'boundaries_url': urlresolvers.reverse('postcode_boundaries', kwargs={'code': self.code}),
-                'representatives_url': urlresolvers.reverse('postcode_representatives', kwargs={'code': self.code})
-            }
         }
         if self.centroid:
             r['centroid'] = {
                'type': 'Point',
                'coordinates': [self.centroid.x, self.centroid.y]
             }
-        r.update(self.get_boundaries()) # for now
+        r.update(self.get_boundaries())
+        if USE_REPRESENTATIVES:
+            for match_type in ['concordance', 'centroid']:
+                reps = self.get_representatives(r.get('boundaries_' + match_type))
+                if reps:
+                    r['representatives_' + match_type] = reps
         return r
 
     def get_boundaries(self):
@@ -98,6 +106,21 @@ class Postcode(models.Model):
                 Boundary.get_dicts(boundaries)
             )
         return r
+        
+    def get_representatives(self, boundaries):
+        """Return a list of dicts matching the elected reps for the provided boundaries.
+        
+        The boundaries argument should be a list of dicts, as in boundaries_ keys in the
+        postcode API response."""
+        if not USE_REPRESENTATIVES:
+            raise NotImplementedError
+        if not boundaries:
+            return []
+        boundary_names = [boundary_url_to_name(b['url']) for b in boundaries]
+        return [
+            r.as_dict() for r in
+            Representative.objects.filter(boundary__in=boundary_names)
+        ]
 
 class PostcodeConcordance(models.Model):
 
