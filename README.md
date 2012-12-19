@@ -20,4 +20,4 @@ You can also load more accurate concordances between individual postal codes and
 
 ## Contact
 
-Please use [GitHub Issues](http://github.com/rhymeswithcycle/represent-postcodes/issues) for bug reports. You can also contact represent@opennorth.ca.
+Please use [GitHub Issues](http://github.com/opennorth/represent-canada/issues) for bug reports. You can also contact represent@opennorth.ca.
