@@ -70,7 +70,7 @@ class Postcode(models.Model):
     def __unicode__(self):
         return self.code
 
-    def as_dict(self):
+    def as_dict(self, sets=None):
         r = {
             'code': self.code,
             'city': self.city,
@@ -81,7 +81,7 @@ class Postcode(models.Model):
                'type': 'Point',
                'coordinates': [self.centroid.x, self.centroid.y]
             }
-        r.update(self.get_boundaries())
+        r.update(self.get_boundaries(sets=sets))
         if USE_REPRESENTATIVES:
             boundary_names = {}
             for match_type in ['concordance', 'centroid']:
@@ -93,12 +93,16 @@ class Postcode(models.Model):
                     r.update(self.get_representatives(boundary_names, Candidate))
         return r
 
-    def get_boundaries(self):
+    def get_boundaries(self, sets=None):
         r = {
             'boundaries_concordance': [],
             'boundaries_centroid': []
         }
+        if sets:
+            set_query = models.Q(set__in=sets)
         concordances = PostcodeConcordance.objects.filter(code=self.code).values_list('boundary', flat=True)
+        if sets:
+            concordances = filter(lambda b: b.split('/')[0] in sets, concordances)
         concordance_sets = set()
         if concordances:
             q = ( (models.Q(set=c.split('/')[0]) & models.Q(slug=c.split('/')[1])) for c in concordances )
@@ -109,7 +113,10 @@ class Postcode(models.Model):
                 concordance_sets.add(b['boundary_set_name'])
             r['boundaries_concordance'] = boundaries
         if self.centroid:
-            boundaries = Boundary.objects.filter(shape__contains=self.centroid)
+            boundary_query = models.Q(shape__contains=self.centroid)
+            if sets:
+                boundary_query = boundary_query & models.Q(set__in=sets)
+            boundaries = Boundary.objects.filter(boundary_query)
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             r['boundaries_centroid'] = filter(
                 lambda b: b['boundary_set_name'] not in concordance_sets,
