@@ -5,8 +5,14 @@ from django.core import urlresolvers
 from django.core.validators import RegexValidator
 
 from boundaries.models import Boundary
+Candidate = None
+USE_CANDIDATES = False
 try:
     from representatives.models import Representative
+    from representatives.models import app_settings as rep_settings
+    if getattr(rep_settings, 'ENABLE_CANDIDATES', False):
+        from representatives.models import Candidate
+        USE_CANDIDATES = True
     from representatives.utils import boundary_url_to_name
     USE_REPRESENTATIVES = True
 except ImportError:
@@ -64,7 +70,7 @@ class Postcode(models.Model):
     def __unicode__(self):
         return self.code
 
-    def as_dict(self):
+    def as_dict(self, sets=None):
         r = {
             'code': self.code,
             'city': self.city,
@@ -75,20 +81,28 @@ class Postcode(models.Model):
                'type': 'Point',
                'coordinates': [self.centroid.x, self.centroid.y]
             }
-        r.update(self.get_boundaries())
+        r.update(self.get_boundaries(sets=sets))
         if USE_REPRESENTATIVES:
+            boundary_names = {}
             for match_type in ['concordance', 'centroid']:
-                reps = self.get_representatives(r.get('boundaries_' + match_type))
-                if reps:
-                    r['representatives_' + match_type] = reps
+                for b in r.get('boundaries_' + match_type, []):
+                    boundary_names[boundary_url_to_name(b['url'])] = match_type
+            if boundary_names:
+                r.update(self.get_representatives(boundary_names, Representative))
+                if USE_CANDIDATES:
+                    r.update(self.get_representatives(boundary_names, Candidate))
         return r
 
-    def get_boundaries(self):
+    def get_boundaries(self, sets=None):
         r = {
             'boundaries_concordance': [],
             'boundaries_centroid': []
         }
+        if sets:
+            set_query = models.Q(set__in=sets)
         concordances = PostcodeConcordance.objects.filter(code=self.code).values_list('boundary', flat=True)
+        if sets:
+            concordances = filter(lambda b: b.split('/')[0] in sets, concordances)
         concordance_sets = set()
         if concordances:
             q = ( (models.Q(set=c.split('/')[0]) & models.Q(slug=c.split('/')[1])) for c in concordances )
@@ -99,7 +113,10 @@ class Postcode(models.Model):
                 concordance_sets.add(b['boundary_set_name'])
             r['boundaries_concordance'] = boundaries
         if self.centroid:
-            boundaries = Boundary.objects.filter(shape__contains=self.centroid)
+            boundary_query = models.Q(shape__contains=self.centroid)
+            if sets:
+                boundary_query = boundary_query & models.Q(set__in=sets)
+            boundaries = Boundary.objects.filter(boundary_query)
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             r['boundaries_centroid'] = filter(
                 lambda b: b['boundary_set_name'] not in concordance_sets,
@@ -107,20 +124,26 @@ class Postcode(models.Model):
             )
         return r
         
-    def get_representatives(self, boundaries):
-        """Return a list of dicts matching the elected reps for the provided boundaries.
-        
-        The boundaries argument should be a list of dicts, as in boundaries_ keys in the
-        postcode API response."""
+    def get_representatives(self, boundary_names, model):
+        """Return a dict of representatives of candidates for the provided boundaries.
+        e.g. {
+            'representatives_centroid': [ {}, {} ],
+            'representatives_concordance': [ {} ]
+        }
+
+        - boundary_names: A dict of boundary names to match types,
+            e.g. {'federal-electoral-districts/outremont': 'centroid'}
+        - model: The Django model to query, either Representative or Candidate
+        """
         if not USE_REPRESENTATIVES:
             raise NotImplementedError
-        if not boundaries:
-            return []
-        boundary_names = [boundary_url_to_name(b['url']) for b in boundaries]
-        return [
-            r.as_dict() for r in
-            Representative.objects.filter(boundary__in=boundary_names)
-        ]
+        reps = model.objects.filter(boundary__in=boundary_names.keys())
+        r = {}
+        model_name = model._meta.verbose_name_plural
+        for rep in reps:
+            key = model_name + '_' + boundary_names[rep.boundary]
+            r.setdefault(key, []).append(rep.as_dict())
+        return r
 
 class PostcodeConcordance(models.Model):
 
