@@ -23,7 +23,7 @@ class Command(BaseCommand):
         for line in reader:
             try:
                 Postcode(
-                    code=line['code'],
+                    code=line['code'].upper(),
                     centroid=Point(float(line['lng']), float(line['lat'])),
                     city=line['city'].decode('iso-8859-1'),
                     province=line['province']
