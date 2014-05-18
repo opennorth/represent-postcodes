@@ -36,22 +36,25 @@ If no filename is provided, reads from STDIN."""
         if len(args) < 2:
             raise CommandError("boundary-set-slug and source arguments are required. See --help.")
 
-        bset_slug = args[0]
+        boundary_set_slug = args[0]
         source = args[1]
+
         try:
             filename = args[2]
             f = open(filename)
         except IndexError:
             f = sys.stdin
 
-        bset = BoundarySet.objects.get(slug=bset_slug)
-        boundaries = Boundary.objects.filter(set=bset)
+        # Delete all concordances from this source.
+        PostcodeConcordance.objects.filter(source=source).delete()
+
+        boundary_set = BoundarySet.objects.get(slug=boundary_set_slug)
+        boundaries = Boundary.objects.filter(set=boundary_set)
 
         boundaries_seen = dict()
-
         for (code, searchterm) in csv.reader(f):
             try:
-                (pc, created) = Postcode.objects.get_or_create(code=code)
+                (postcode, created) = Postcode.objects.get_or_create(code=code)
             except ValidationError as e:
                 print "%s: %r" % (code, e)
                 continue
@@ -60,24 +63,21 @@ If no filename is provided, reads from STDIN."""
                 boundary = boundaries_seen.get(searchterm)
                 if not boundary:
                     if options['search-field'] == 'name':
-                        slug = slugify(searchterm)
-                        boundary = boundaries.get(slug=slug)
+                        boundary = boundaries.get(slug=slugify(searchterm))
                     else:
-                        boundary = boundaries.get(**{
-                            options['search-field']: searchterm
-                        })
+                        boundary = boundaries.get(**{options['search-field']: searchterm})
                     boundaries_seen[searchterm] = boundary
             except Boundary.DoesNotExist:
                 print "Cannot find boundary for %s" % searchterm
                 continue
 
-            boundary_name = u"%s/%s" % (bset.slug, boundary.slug)
-            if PostcodeConcordance.objects.filter(code=pc, boundary=boundary_name).exists():
+            boundary_name = u"%s/%s" % (boundary_set.slug, boundary.slug)
+            if PostcodeConcordance.objects.filter(code=postcode, boundary=boundary_name).exists():
                 print "Concordance already exists for %s -> %s" % (code, boundary_name)
                 continue
                 
             PostcodeConcordance.objects.create(
-                code=pc,
+                code=postcode,
                 boundary=boundary_name,
-                source=source
+                source=source,
             )
