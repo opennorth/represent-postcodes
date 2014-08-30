@@ -110,7 +110,7 @@ class Postcode(models.Model):
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             boundaries = Boundary.get_dicts(boundaries)
             for b in boundaries:
-                concordance_sets.add(b['boundary_set_name'])
+                concordance_sets.add(b['related']['boundary_set_url'])
             r['boundaries_concordance'] = boundaries
         if self.centroid:
             boundary_query = models.Q(shape__contains=self.centroid)
@@ -119,7 +119,7 @@ class Postcode(models.Model):
             boundaries = Boundary.objects.filter(boundary_query)
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             r['boundaries_centroid'] = filter(
-                lambda b: b['boundary_set_name'] not in concordance_sets,
+                lambda b: b['related']['boundary_set_url'] not in concordance_sets,
                 Boundary.get_dicts(boundaries)
             )
         return r
