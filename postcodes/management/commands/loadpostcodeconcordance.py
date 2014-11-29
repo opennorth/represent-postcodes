@@ -1,15 +1,15 @@
 import csv
 import logging
-from optparse import make_option
 import sys
+from optparse import make_option
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-
 from django.template.defaultfilters import slugify
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     help = """Imports a CSV file describing a concordance of postal codes
@@ -56,7 +56,7 @@ If no filename is provided, reads from STDIN."""
             try:
                 (postcode, created) = Postcode.objects.get_or_create(code=code)
             except ValidationError as e:
-                print "%s: %r" % (code, e)
+                print("%s: %r" % (code, e))
                 continue
 
             try:
@@ -68,14 +68,14 @@ If no filename is provided, reads from STDIN."""
                         boundary = boundaries.get(**{options['search-field']: searchterm})
                     boundaries_seen[searchterm] = boundary
             except Boundary.DoesNotExist:
-                print "Cannot find boundary for %s" % searchterm
+                print("Cannot find boundary for %s" % searchterm)
                 continue
 
             boundary_name = u"%s/%s" % (boundary_set.slug, boundary.slug)
             if PostcodeConcordance.objects.filter(code=postcode, boundary=boundary_name).exists():
-                print "Concordance already exists for %s -> %s" % (code, boundary_name)
+                print("Concordance already exists for %s -> %s" % (code, boundary_name))
                 continue
-                
+
             PostcodeConcordance.objects.create(
                 code=postcode,
                 boundary=boundary_name,

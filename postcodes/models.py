@@ -1,7 +1,6 @@
 import re
 
 from django.contrib.gis.db import models
-from django.core import urlresolvers
 from django.core.validators import RegexValidator
 
 from boundaries.models import Boundary
@@ -21,11 +20,10 @@ except ImportError:
 
 r_postalcode = re.compile(r'^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]\d[ABCEGHJKLMNPRSTVWXYZ]\d$')
 
+
 class Postcode(models.Model):
 
-    code = models.CharField(max_length=6, primary_key=True,
-        validators=[RegexValidator(r_postalcode)])
-
+    code = models.CharField(max_length=6, primary_key=True, validators=[RegexValidator(r_postalcode)])
     centroid = models.PointField(null=True, blank=True)
     city = models.CharField(max_length=100, blank=True)
     province = models.CharField(max_length=2, blank=True)
@@ -105,8 +103,8 @@ class Postcode(models.Model):
             concordances = filter(lambda b: b.split('/')[0] in sets, concordances)
         concordance_sets = set()
         if concordances:
-            q = ( (models.Q(set=c.split('/')[0]) & models.Q(slug=c.split('/')[1])) for c in concordances )
-            boundaries = Boundary.objects.filter( reduce(lambda a,b: a | b, q) )
+            q = ((models.Q(set=c.split('/')[0]) & models.Q(slug=c.split('/')[1])) for c in concordances)
+            boundaries = Boundary.objects.filter(reduce(lambda a, b: a | b, q))
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             boundaries = Boundary.get_dicts(boundaries)
             for b in boundaries:
@@ -123,7 +121,7 @@ class Postcode(models.Model):
                 Boundary.get_dicts(boundaries)
             )
         return r
-        
+
     def get_representatives(self, boundary_names, model):
         """Return a dict of representatives of candidates for the provided boundaries.
         e.g. {
@@ -145,12 +143,11 @@ class Postcode(models.Model):
             r.setdefault(key, []).append(rep.as_dict())
         return r
 
-class PostcodeConcordance(models.Model):
 
+class PostcodeConcordance(models.Model):
     code = models.ForeignKey(Postcode)
     boundary = models.TextField()
-    source = models.CharField(max_length=30,
-        help_text="An internal-use string referring to the source of this data.")
+    source = models.CharField(max_length=30, help_text="An internal-use string referring to the source of this data.")
 
     class Meta:
         unique_together = (
