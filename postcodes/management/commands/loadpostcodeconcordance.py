@@ -1,83 +1,82 @@
+from __future__ import unicode_literals
+
 import csv
 import logging
 import sys
 from optparse import make_option
 
+from boundaries.models import Boundary, BoundarySet
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.template.defaultfilters import slugify
 
-logger = logging.getLogger(__name__)
+from postcodes.models import Postcode, PostcodeConcordance
+
+log = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = """Imports a CSV file describing a concordance of postal codes
-    to boundaries. Arguments:
+    help = """Imports a headerless CSV file with columns for code,term. The term
+matches a unique boundary in the boundary set. See --searchfield for details.
 
-boundary-set-slug: the slug of the BoundarySet the concordance is for
-source: <= 30 characters describing where this concordance is from
-filename: a two-column CSV file, where column 1 is the postcode and
-    column 2 is a reference to the boundary (see the --searchfield option)
+The first two arguments to this command must be the slug of a boundary set and a
+description of the data source in 30 characters or less.
 
-If no filename is provided, reads from STDIN."""
-    args = '<boundary-set-slug> <source> [<filename>]'
+If no filename is given, reads from standard input."""
+    args = '<slug> <source> [<filename>]'
 
     option_list = BaseCommand.option_list + (
         make_option('--searchfield', action='store', dest='search-field', default='external_id',
-            help="Which Boundary field the second column of the CSV file corresponds to. Either 'external_id', 'name' or 'slug'. Default is external_id."),
+            help="Set the SQL column to which the second column of the CSV corresponds. One of 'external_id' (default), 'name' or 'slug'."),
     )
 
     @transaction.commit_on_success
     def handle(self, *args, **options):
-        from postcodes.models import Postcode, PostcodeConcordance
-        from boundaries.models import Boundary, BoundarySet
-
         if len(args) < 2:
-            raise CommandError("boundary-set-slug and source arguments are required. See --help.")
+            raise CommandError("Missing slug and source arguments. See --help.")
 
-        boundary_set_slug = args[0]
+        slug = args[0]
         source = args[1]
 
-        try:
-            filename = args[2]
-            f = open(filename)
-        except IndexError:
+        if len(args) == 3:
+            f = open(args[2])
+        else:
             f = sys.stdin
+
+        boundary_set = BoundarySet.objects.get(slug=slug)
+        boundaries = Boundary.objects.filter(set=boundary_set)
 
         # Delete all concordances from this source.
         PostcodeConcordance.objects.filter(source=source).delete()
 
-        boundary_set = BoundarySet.objects.get(slug=boundary_set_slug)
-        boundaries = Boundary.objects.filter(set=boundary_set)
-
         boundaries_seen = dict()
-        for (code, searchterm) in csv.reader(f):
+        for (code, term) in csv.reader(f):
             try:
                 (postcode, created) = Postcode.objects.get_or_create(code=code)
             except ValidationError as e:
-                print("%s: %r" % (code, e))
+                log.error("%s: %r" % (code, e))
                 continue
 
             try:
-                boundary = boundaries_seen.get(searchterm)
+                boundary = boundaries_seen.get(term)
                 if not boundary:
                     if options['search-field'] == 'name':
-                        boundary = boundaries.get(slug=slugify(searchterm))
+                        boundary = boundaries.get(slug=slugify(term))
                     else:
-                        boundary = boundaries.get(**{options['search-field']: searchterm})
-                    boundaries_seen[searchterm] = boundary
+                        boundary = boundaries.get(**{options['search-field']: term})
+                    boundaries_seen[term] = boundary
             except Boundary.DoesNotExist:
-                print("Cannot find boundary for %s" % searchterm)
+                log.error("No boundary %s matches %s" % (options['search-field'], term))
                 continue
 
-            boundary_name = u"%s/%s" % (boundary_set.slug, boundary.slug)
-            if PostcodeConcordance.objects.filter(code=postcode, boundary=boundary_name).exists():
-                print("Concordance already exists for %s -> %s" % (code, boundary_name))
+            path = '%s/%s' % (boundary_set.slug, boundary.slug)
+            if PostcodeConcordance.objects.filter(code=postcode, boundary=path).exists():
+                log.warning("Concordance already exists between %s and %s" % (code, path))
                 continue
 
             PostcodeConcordance.objects.create(
                 code=postcode,
-                boundary=boundary_name,
+                boundary=path,
                 source=source,
             )

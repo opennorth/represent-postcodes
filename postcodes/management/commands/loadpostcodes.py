@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import csv
 import logging
 import sys
@@ -12,7 +14,8 @@ log = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'Imports a CSV file without headers and columns for code,latitude,longitude,locality,region from the given filename or standard input.'
+    help = 'Imports a headerless CSV file with columns for code,latitude,longitude,locality,region. If no filename is given, reads from standard input.'
+    args = '[<filename>]'
 
     def handle(self, *args, **options):
         if len(args) == 1:
