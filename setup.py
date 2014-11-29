@@ -1,13 +1,22 @@
-from distribute_setup import use_setuptools
-use_setuptools()
-
 from setuptools import setup
 
 setup(
-    name='represent-postcodes',
-    packages=['postcodes', 'postcodes.management', 'postcodes.management.commands'],
-    version='0.0.1',
+    name="represent-postcodes",
+    version="0.0.1",
+    license="MIT",
+    packages=[
+        'postcodes',
+        'postcodes.management',
+        'postcodes.management.commands',
+    ],
     install_requires=[
-        'django-appconf'
+        'django-appconf',
+    ],
+    classifiers=[
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'License :: OSI Approved :: MIT License',
+        'Framework :: Django',
+        'Topic :: Scientific/Engineering :: GIS',
     ],
 )
