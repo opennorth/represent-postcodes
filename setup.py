@@ -11,12 +11,12 @@ setup(
     ],
     install_requires=[
         'django-appconf',
+        'represent-boundaries',
     ],
     classifiers=[
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'License :: OSI Approved :: MIT License',
         'Framework :: Django',
-        'Topic :: Scientific/Engineering :: GIS',
     ],
 )
