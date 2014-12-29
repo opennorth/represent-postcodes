@@ -15,6 +15,9 @@ from postcodes.models import Postcode, PostcodeConcordance
 
 log = logging.getLogger(__name__)
 
+if not hasattr(transaction, 'atomic'):  # Django < 1.6
+    transaction.atomic = transaction.commit_on_success
+
 
 class Command(BaseCommand):
     help = """Imports a headerless CSV file with columns for code,term. The term
@@ -31,7 +34,7 @@ If no filename is given, reads from standard input."""
             help="Set the SQL column to which the second column of the CSV corresponds. One of 'external_id' (default), 'name' or 'slug'."),
     )
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def handle(self, *args, **options):
         if len(args) < 2:
             raise CommandError("Missing slug and source arguments. See --help.")
