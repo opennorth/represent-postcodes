@@ -1,8 +1,8 @@
 # Represent Postcodes
 
-[Represent](http://represent.opennorth.ca) is the open database of Canadian elected officials and electoral districts. It provides a [REST API](http://represent.opennorth.ca/api/) to boundary, representative, and postcode resources.
+[Represent](https://represent.opennorth.ca/) is the open database of Canadian elected officials and electoral districts. It provides a [REST API](https://represent.opennorth.ca/api/) to boundary, representative, and postcode resources.
 
-This repository provides an API to postal codes. API documentation is available at [represent.opennorth.ca/api/](http://represent.opennorth.ca/api/#postcode).
+This repository provides an API to postal codes. API documentation is available at [represent.opennorth.ca/api/](https://represent.opennorth.ca/api/#postcode).
 
 The [represent-canada](http://github.com/opennorth/represent-canada) repository provides a master Django project, and points to packages which add boundary, representative, and map features.
 
