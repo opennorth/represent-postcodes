@@ -35,7 +35,7 @@ class Postcode(models.Model):
 
     objects = models.GeoManager()
 
-    # @see http://en.wikipedia.org/wiki/List_of_postal_codes_in_Canada List of postal codes in Canada
+    # @see https://en.wikipedia.org/wiki/List_of_postal_codes_in_Canada List of postal codes in Canada
     def save(self, *args, **kwargs):
         self.clean_fields()
         if not self.province:
