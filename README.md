@@ -18,6 +18,6 @@ Load postal code concordances with:
 
 ## Bugs? Questions?
 
-This project's main repository is on GitHub: [https://github.com/rhymeswithcycle/represent-postcodes](https://github.com/rhymeswithcycle/represent-postcodes), where your contributions and forks are greatly welcomed. Please submit bug reports, feature requests, and feedback to [represent-canada](https://github.com/opennorth/represent-canada).
+Please submit bug reports, feature requests, and feedback to [represent-canada](https://github.com/opennorth/represent-canada).
 
 Released under the MIT license
