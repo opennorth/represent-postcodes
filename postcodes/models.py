@@ -81,8 +81,8 @@ class Postcode(models.Model):
         }
         if self.centroid:
             r['centroid'] = {
-               'type': 'Point',
-               'coordinates': [self.centroid.x, self.centroid.y]
+                'type': 'Point',
+                'coordinates': [self.centroid.x, self.centroid.y]
             }
         r.update(self.get_boundaries(sets=sets))
         if USE_REPRESENTATIVES:
