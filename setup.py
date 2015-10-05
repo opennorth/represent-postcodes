@@ -10,6 +10,7 @@ setup(
         'postcodes',
         'postcodes.management',
         'postcodes.management.commands',
+        'postcodes.migrations',
     ],
     install_requires=[
         'django-appconf',
