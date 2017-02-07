@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 Postcode(
                     code=row['code'].upper(),
                     centroid=Point(float(row['longitude']), float(row['latitude'])),
-                    city=row['locality'].decode('iso-8859-1'),
+                    city=row['locality'],
                     province=row['region'],
                 ).save()
             except ValidationError as e:
