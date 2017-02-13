@@ -3,9 +3,8 @@ from __future__ import unicode_literals
 import csv
 import logging
 import sys
-from optparse import make_option
 
-from boundaries.models import Boundary, BoundarySet
+from boundaries.models import BoundarySet, Boundary
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -14,9 +13,6 @@ from django.template.defaultfilters import slugify
 from postcodes.models import Postcode, PostcodeConcordance
 
 log = logging.getLogger(__name__)
-
-if not hasattr(transaction, 'atomic'):  # Django < 1.6
-    transaction.atomic = transaction.commit_on_success
 
 
 class Command(BaseCommand):
@@ -29,10 +25,10 @@ description of the data source in 30 characters or less.
 If no filename is given, reads from standard input."""
     args = '<slug> <source> [<filename>]'
 
-    option_list = BaseCommand.option_list + (
-        make_option('--searchfield', action='store', dest='search-field', default='external_id',
-            help="Set the SQL column to which the second column of the CSV corresponds. One of 'external_id' (default), 'name' or 'slug'."),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--searchfield', action='store', dest='search-field',
+            default='external_id',
+            help="Set the SQL column to which the second column of the CSV corresponds. One of 'external_id' (default), 'name' or 'slug'.")
 
     @transaction.atomic
     def handle(self, *args, **options):
