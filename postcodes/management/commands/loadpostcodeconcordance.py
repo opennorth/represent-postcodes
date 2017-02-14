@@ -34,11 +34,11 @@ If no filename is given, reads from standard input."""
 
     @transaction.atomic
     def handle(self, *args, **options):
-        slug = args[0]
-        source = args[1]
+        slug = options['slug']
+        source = options['source']
 
-        if len(args) == 3:
-            f = open(args[2])
+        if options['filename']:
+            f = open(options['filename'])
         else:
             f = sys.stdin
 

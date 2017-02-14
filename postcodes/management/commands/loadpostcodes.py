@@ -20,8 +20,8 @@ class Command(BaseCommand):
         parser.add_argument('filename', nargs='?')
 
     def handle(self, *args, **options):
-        if len(args) == 1:
-            f = open(args[0])
+        if options['filename']:
+            f = open(options['filename'])
         else:
             f = sys.stdin
 
