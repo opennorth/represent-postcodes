@@ -23,18 +23,17 @@ The first two arguments to this command must be the slug of a boundary set and a
 description of the data source in 30 characters or less.
 
 If no filename is given, reads from standard input."""
-    args = '<slug> <source> [<filename>]'
 
     def add_arguments(self, parser):
+        parser.add_argument('slug', nargs=1)
+        parser.add_argument('source', nargs=1)
+        parser.add_argument('filename', nargs='?')
         parser.add_argument('--searchfield', action='store', dest='search-field',
             default='external_id',
             help="Set the SQL column to which the second column of the CSV corresponds. One of 'external_id' (default), 'name' or 'slug'.")
 
     @transaction.atomic
     def handle(self, *args, **options):
-        if len(args) < 2:
-            raise CommandError("Missing slug and source arguments. See --help.")
-
         slug = args[0]
         source = args[1]
 

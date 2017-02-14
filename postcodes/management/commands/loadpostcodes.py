@@ -15,7 +15,9 @@ log = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = 'Imports a headerless CSV file with columns for code,latitude,longitude,locality,region. If no filename is given, reads from standard input.'
-    args = '[<filename>]'
+
+    def add_arguments(self, parser):
+        parser.add_argument('filename', nargs='?')
 
     def handle(self, *args, **options):
         if len(args) == 1:
