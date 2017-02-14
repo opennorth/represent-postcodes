@@ -33,6 +33,7 @@ class Postcode(models.Model):
     city = models.CharField(max_length=100, blank=True)
     province = models.CharField(max_length=2, blank=True)
 
+    # @see https://docs.djangoproject.com/en/1.10/releases/1.9/#geomanager-and-geoqueryset-custom-methods Django 1.9
     objects = models.GeoManager()
 
     # @see https://en.wikipedia.org/wiki/List_of_postal_codes_in_Canada List of postal codes in Canada

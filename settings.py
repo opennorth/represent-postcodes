@@ -1,5 +1,5 @@
 """
-To run `django-admin.py migrate --settings settings --noinput` before testing.
+To run `PYTHONPATH=$PYTHONPATH:$PWD django-admin.py migrate --settings settings --noinput`.
 """
 
 SECRET_KEY = 'x'
@@ -16,7 +16,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.gis',
+    'boundaries',
     'postcodes',
 )
-
-MIDDLEWARE_CLASSES = []
