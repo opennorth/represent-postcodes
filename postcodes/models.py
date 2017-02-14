@@ -1,12 +1,9 @@
-from __future__ import unicode_literals
-
 import re
+from functools import reduce
 
 from boundaries.models import Boundary
 from django.contrib.gis.db import models
 from django.core.validators import RegexValidator
-from django.utils.six.moves import reduce
-from django.utils.encoding import python_2_unicode_compatible
 
 Representative = None
 Candidate = None
@@ -26,7 +23,6 @@ except ImportError:
 r_postalcode = re.compile(r'^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]\d[ABCEGHJKLMNPRSTVWXYZ]\d$')
 
 
-@python_2_unicode_compatible
 class Postcode(models.Model):
     code = models.CharField(max_length=6, primary_key=True, validators=[RegexValidator(r_postalcode)])
     centroid = models.PointField(null=True, blank=True)
@@ -151,7 +147,6 @@ class Postcode(models.Model):
         return r
 
 
-@python_2_unicode_compatible
 class PostcodeConcordance(models.Model):
     code = models.ForeignKey(Postcode)
     boundary = models.TextField()
