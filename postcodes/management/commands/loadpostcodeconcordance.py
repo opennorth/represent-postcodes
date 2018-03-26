@@ -32,8 +32,8 @@ If no filename is given, reads from standard input."""
 
     @transaction.atomic
     def handle(self, *args, **options):
-        slug = options['slug']
-        source = options['source']
+        slug = options['slug'][0]
+        source = options['source'][0]
 
         if options['filename']:
             f = open(options['filename'])
