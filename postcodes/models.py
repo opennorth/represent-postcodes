@@ -104,7 +104,10 @@ class Postcode(models.Model):
         concordance_sets = set()
 
         if concordances:
-            q = ((models.Q(set=concordance.split('/')[0]) & models.Q(slug=concordance.split('/')[1])) for concordance in concordances)
+            q = (
+                (models.Q(set=concordance.split('/')[0]) & models.Q(slug=concordance.split('/')[1]))
+                for concordance in concordances
+            )
 
             boundaries = Boundary.objects.filter(reduce(lambda a, b: a | b, q))
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
@@ -125,7 +128,9 @@ class Postcode(models.Model):
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             boundaries = Boundary.get_dicts(boundaries)
 
-            r['boundaries_centroid'] = [boundary for boundary in boundaries if boundary['related']['boundary_set_url'] not in concordance_sets]
+            r['boundaries_centroid'] = [
+                boundary for boundary in boundaries if boundary['related']['boundary_set_url'] not in concordance_sets
+            ]
 
         return r
 

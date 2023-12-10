@@ -31,7 +31,10 @@ If no filename is given, reads from standard input."""
             action='store',
             dest='search-field',
             default='external_id',
-            help="Set the SQL column to which the second column of the CSV corresponds. One of 'external_id' (default), 'name' or 'slug'.",
+            help=(
+                "Set the SQL column to which the second column of the CSV corresponds. "
+                "One of 'external_id' (default), 'name' or 'slug'."
+            ),
         )
 
     @transaction.atomic
