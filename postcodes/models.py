@@ -145,7 +145,7 @@ class Postcode(models.Model):
 
 
 class PostcodeConcordance(models.Model):
-    code = models.ForeignKey(Postcode)
+    code = models.ForeignKey(Postcode, on_delete=models.CASCADE)
     boundary = models.TextField()
     source = models.CharField(max_length=30, help_text="A description of the data source.")
 
