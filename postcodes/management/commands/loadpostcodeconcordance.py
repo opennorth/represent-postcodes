@@ -2,7 +2,7 @@ import csv
 import logging
 import sys
 
-from boundaries.models import BoundarySet, Boundary
+from boundaries.models import Boundary, BoundarySet
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction

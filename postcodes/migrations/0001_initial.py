@@ -1,7 +1,8 @@
-from django.db import models, migrations
+import re
+
 import django.contrib.gis.db.models.fields
 import django.core.validators
-import re
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

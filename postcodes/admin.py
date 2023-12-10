@@ -8,10 +8,6 @@ class PostcodeAdmin(admin.OSMGeoAdmin):
     list_display = ('code', 'city', 'province')
 
 
-
-
 @admin.register(PostcodeConcordance)
 class PostcodeConcordanceAdmin(admin.ModelAdmin):
     list_display = ('code', 'boundary', 'source')
-
-
