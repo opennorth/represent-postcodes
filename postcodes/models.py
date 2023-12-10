@@ -158,4 +158,4 @@ class PostcodeConcordance(models.Model):
         unique_together = (('code', 'boundary'))
 
     def __str__(self):
-        return '{} -> {}'.format(self.code_id, self.boundary)
+        return f'{self.code_id} -> {self.boundary}'
