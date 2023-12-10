@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import models, migrations
 import django.contrib.gis.db.models.fields
 import django.core.validators
@@ -39,6 +36,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='postcodeconcordance',
-            unique_together=set([('code', 'boundary')]),
+            unique_together={('code', 'boundary')},
         ),
     ]

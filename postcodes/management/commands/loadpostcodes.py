@@ -33,4 +33,4 @@ class Command(BaseCommand):
                     province=row['region'],
                 ).save()
             except ValidationError as e:
-                log.error("%s: %r" % (row['code'], e))
+                log.error("{}: {!r}".format(row['code'], e))

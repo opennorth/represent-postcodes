@@ -51,7 +51,7 @@ If no filename is given, reads from standard input."""
             try:
                 (postcode, created) = Postcode.objects.get_or_create(code=code)
             except ValidationError as e:
-                log.error("%s: %r" % (code, e))
+                log.error("{}: {!r}".format(code, e))
                 continue
 
             try:
@@ -63,12 +63,12 @@ If no filename is given, reads from standard input."""
                         boundary = boundaries.get(**{options['search-field']: term})
                     boundaries_seen[term] = boundary
             except Boundary.DoesNotExist:
-                log.error("No boundary %s matches %s" % (options['search-field'], term))
+                log.error("No boundary {} matches {}".format(options['search-field'], term))
                 continue
 
-            path = '%s/%s' % (boundary_set.slug, boundary.slug)
+            path = '{}/{}'.format(boundary_set.slug, boundary.slug)
             if PostcodeConcordance.objects.filter(code=postcode, boundary=path).exists():
-                log.warning("Concordance already exists between %s and %s" % (code, path))
+                log.warning("Concordance already exists between {} and {}".format(code, path))
                 continue
 
             PostcodeConcordance.objects.create(

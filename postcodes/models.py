@@ -62,7 +62,7 @@ class Postcode(models.Model):
                     'V': 'BC',
                     'Y': 'YT',
                 }.get(self.code[0])
-        super(Postcode, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.code
@@ -153,4 +153,4 @@ class PostcodeConcordance(models.Model):
         unique_together = (('code', 'boundary'))
 
     def __str__(self):
-        return '%s -> %s' % (self.code_id, self.boundary)
+        return '{} -> {}'.format(self.code_id, self.boundary)
