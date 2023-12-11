@@ -12,7 +12,10 @@ log = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'Imports a headerless CSV file with columns for code,latitude,longitude,locality,region. If no filename is given, reads from standard input.'
+    help = (
+        'Imports a headerless CSV file with columns for code,latitude,longitude,locality,region. '
+        'If no filename is given, reads from standard input.'
+    )
 
     def add_arguments(self, parser):
         parser.add_argument('filename', nargs='?')
@@ -27,10 +30,10 @@ class Command(BaseCommand):
         for row in reader:
             try:
                 Postcode(
-                    code=row['code'].upper(),
+                    code=row['code'].upper().replace(' ', ''),
                     centroid=Point(float(row['longitude']), float(row['latitude'])),
                     city=row['locality'],
                     province=row['region'],
                 ).save()
             except ValidationError as e:
-                log.error("%s: %r" % (row['code'], e))
+                log.error("%s: %s", row['code'], repr(e))
