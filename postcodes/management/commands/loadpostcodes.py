@@ -30,7 +30,7 @@ class Command(BaseCommand):
         for row in reader:
             try:
                 Postcode(
-                    code=row['code'].upper(),
+                    code=row['code'].upper().replace(' ', ''),
                     centroid=Point(float(row['longitude']), float(row['latitude'])),
                     city=row['locality'],
                     province=row['region'],
