@@ -62,7 +62,7 @@ class Postcode(models.Model):
                     'V': 'BC',
                     'Y': 'YT',
                 }.get(self.code[0])
-        super(Postcode, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.code
@@ -104,7 +104,10 @@ class Postcode(models.Model):
         concordance_sets = set()
 
         if concordances:
-            q = ((models.Q(set=concordance.split('/')[0]) & models.Q(slug=concordance.split('/')[1])) for concordance in concordances)
+            q = (
+                (models.Q(set=concordance.split('/')[0]) & models.Q(slug=concordance.split('/')[1]))
+                for concordance in concordances
+            )
 
             boundaries = Boundary.objects.filter(reduce(lambda a, b: a | b, q))
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
@@ -125,7 +128,9 @@ class Postcode(models.Model):
             boundaries = Boundary.prepare_queryset_for_get_dicts(boundaries)
             boundaries = Boundary.get_dicts(boundaries)
 
-            r['boundaries_centroid'] = [boundary for boundary in boundaries if boundary['related']['boundary_set_url'] not in concordance_sets]
+            r['boundaries_centroid'] = [
+                boundary for boundary in boundaries if boundary['related']['boundary_set_url'] not in concordance_sets
+            ]
 
         return r
 
@@ -145,7 +150,7 @@ class Postcode(models.Model):
 
 
 class PostcodeConcordance(models.Model):
-    code = models.ForeignKey(Postcode)
+    code = models.ForeignKey(Postcode, on_delete=models.CASCADE)
     boundary = models.TextField()
     source = models.CharField(max_length=30, help_text="A description of the data source.")
 
@@ -153,4 +158,4 @@ class PostcodeConcordance(models.Model):
         unique_together = (('code', 'boundary'))
 
     def __str__(self):
-        return '%s -> %s' % (self.code_id, self.boundary)
+        return f'{self.code_id} -> {self.boundary}'

@@ -2,7 +2,7 @@ import csv
 import logging
 import sys
 
-from boundaries.models import BoundarySet, Boundary
+from boundaries.models import Boundary, BoundarySet
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -26,9 +26,16 @@ If no filename is given, reads from standard input."""
         parser.add_argument('slug', nargs=1)
         parser.add_argument('source', nargs=1)
         parser.add_argument('filename', nargs='?')
-        parser.add_argument('--searchfield', action='store', dest='search-field',
+        parser.add_argument(
+            '--searchfield',
+            action='store',
+            dest='search-field',
             default='external_id',
-            help="Set the SQL column to which the second column of the CSV corresponds. One of 'external_id' (default), 'name' or 'slug'.")
+            help=(
+                "Set the SQL column to which the second column of the CSV corresponds. "
+                "One of 'external_id' (default), 'name' or 'slug'."
+            ),
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -51,7 +58,7 @@ If no filename is given, reads from standard input."""
             try:
                 (postcode, created) = Postcode.objects.get_or_create(code=code)
             except ValidationError as e:
-                log.error("%s: %r" % (code, e))
+                log.error("%s: %s", code, repr(e))
                 continue
 
             try:
@@ -63,12 +70,12 @@ If no filename is given, reads from standard input."""
                         boundary = boundaries.get(**{options['search-field']: term})
                     boundaries_seen[term] = boundary
             except Boundary.DoesNotExist:
-                log.error("No boundary %s matches %s" % (options['search-field'], term))
+                log.error("No boundary %s matches %s", options['search-field'], term)
                 continue
 
-            path = '%s/%s' % (boundary_set.slug, boundary.slug)
+            path = f'{boundary_set.slug}/{boundary.slug}'
             if PostcodeConcordance.objects.filter(code=postcode, boundary=path).exists():
-                log.warning("Concordance already exists between %s and %s" % (code, path))
+                log.warning("Concordance already exists between %s and %s", code, path)
                 continue
 
             PostcodeConcordance.objects.create(
